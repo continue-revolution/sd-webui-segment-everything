@@ -7,8 +7,8 @@ from PIL import Image
 import numpy as np
 
 from modules.api.api import encode_pil_to_base64, decode_base64_to_image
-from scripts.sam import sam_predict, dino_predict, update_mask, cnet_seg, categorical_mask
-from scripts.sam import sam_model_list
+from lib_segment_anything.sam import (sam_predict, dino_predict, update_mask,
+    cnet_seg, categorical_mask, sam_model_list)
 
 
 def decode_to_pil(image):
@@ -238,9 +238,3 @@ def sam_api(_: gr.Blocks, app: FastAPI):
             result["resized_input"] = encode_to_base64(resized_input_img)
         return result
 
-
-try:
-    import modules.script_callbacks as script_callbacks
-    script_callbacks.on_app_started(sam_api)
-except:
-    print("SAM Web UI API failed to initialize")
