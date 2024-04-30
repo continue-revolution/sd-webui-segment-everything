@@ -21,19 +21,27 @@ function switchToInpaintUpload() {
     return arguments;
 }
 
+function samSpecialTabForUI() {
+    return 'sam_special_tab_for_ui' in opts && opts.sam_special_tab_for_ui;
+}
+
 function samTabPrefix() {
-    const tabs = gradioApp().querySelector('#tabs');
-    if (tabs) {
-        const buttons = tabs.querySelectorAll('button');
-        if (buttons) {
-            if (buttons[0].className.includes("selected")) {
-                return "txt2img_sam_"
-            } else if (buttons[1].className.includes("selected")) {
-                return "img2img_sam_"
+    if (samSpecialTabForUI()) {
+        return "img2img_sam_";
+    } else {
+        const tabs = gradioApp().querySelector('#tabs');
+        if (tabs) {
+            const buttons = tabs.querySelectorAll('button');
+            if (buttons) {
+                if (buttons[0].className.includes("selected")) {
+                    return "txt2img_sam_";
+                } else if (buttons[1].className.includes("selected")) {
+                    return "img2img_sam_";
+                }
             }
         }
+        return "_sam_";
     }
-    return "_sam_"
 }
 
 function samImmediatelyGenerate() {
@@ -187,4 +195,23 @@ onUiUpdate(() => {
             samPrevImg[samTabPrefix()] = null;
         }
     }
-})
+});
+
+
+async function samWaitForOpts() {
+    for (; ;) {
+        if (window.opts && Object.keys(window.opts).length) {
+            return window.opts;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+
+onUiLoaded(async () => {
+    const opts = await samWaitForOpts();
+    if (samSpecialTabForUI()) {
+        let accordion = gradioApp().getElementById('segment_anything_accordion_img2img');
+        let tab = gradioApp().getElementById('tab_segment_anything');
+        tab.appendChild(accordion)
+    }
+});
