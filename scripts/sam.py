@@ -58,7 +58,38 @@ def show_masks(image_np, masks: np.ndarray, alpha=0.5):
     return image.astype(np.uint8)
 
 
-def update_mask(mask_gallery, chosen_mask, dilation_amt, input_image):
+def update_mask_gr_four(mask_gallery, chosen_mask, dilation_amt, input_image):
+    print("Dilation Amount: ", dilation_amt)
+
+    # Check if mask_gallery is a list
+    if isinstance(mask_gallery, list):
+        # Extract the image from the (image, caption) tuple
+        image_tuple = mask_gallery[chosen_mask + 3]
+        if isinstance(image_tuple, tuple) and len(image_tuple) == 2:
+            mask_image = image_tuple[0]  # Get the image part of the tuple
+            if isinstance(mask_image, str):  # If it's a file path
+                mask_image = Image.open(mask_image)
+            elif isinstance(mask_image, np.ndarray):  # If it's an ndarray
+                mask_image = Image.fromarray(mask_image)
+            # Else, it is already a PIL.Image
+        else:
+            raise TypeError("Expected a tuple (image, caption) in mask_gallery")
+    else:
+        # If not a list, use the provided mask_gallery as-is
+        mask_image = mask_gallery
+    
+    binary_img = np.array(mask_image.convert('1'))
+
+    if dilation_amt:
+        mask_image, binary_img = dilate_mask(binary_img, dilation_amt)
+    
+    blended_image = Image.fromarray(show_masks(np.array(input_image), binary_img.astype(np.bool_)[None, ...]))
+    matted_image = np.array(input_image)
+    matted_image[~binary_img] = np.array([0, 0, 0, 0])
+    
+    return [blended_image, mask_image, Image.fromarray(matted_image)]
+
+def update_mask_gr_three(mask_gallery, chosen_mask, dilation_amt, input_image):
     print("Dilation Amount: ", dilation_amt)
     if isinstance(mask_gallery, list):
         mask_image = Image.open(mask_gallery[chosen_mask + 3]['name'])
@@ -71,6 +102,12 @@ def update_mask(mask_gallery, chosen_mask, dilation_amt, input_image):
     matted_image = np.array(input_image)
     matted_image[~binary_img] = np.array([0, 0, 0, 0])
     return [blended_image, mask_image, Image.fromarray(matted_image)]
+
+def update_mask(mask_gallery, chosen_mask, dilation_amt, input_image):
+    if gradio_version and gradio_version < "4.0.0":
+        return update_mask_gr_three(mask_gallery, chosen_mask, dilation_amt, input_image)
+    else:
+        return update_mask_gr_four(mask_gallery, chosen_mask, dilation_amt, input_image)
 
 
 def load_sam_model(sam_checkpoint):
