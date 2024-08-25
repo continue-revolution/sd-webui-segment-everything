@@ -185,9 +185,16 @@ def create_mask_batch_output(
             output_blend.save(os.path.join(dino_batch_dest_dir, f"{filename}_{idx}_blend{ext}"))
 
 
+def parse_points(points):
+    if isinstance(points, str):
+        points = eval(points)  # Convert string representation of list back to list
+    return points
+
 def sam_predict(sam_model_name, input_image, positive_points, negative_points,
                 dino_checkbox, dino_model_name, text_prompt, box_threshold,
                 dino_preview_checkbox, dino_preview_boxes_selection):
+    positive_points = parse_points(positive_points)
+    negative_points = parse_points(negative_points)
     print("Start SAM Processing")
     if sam_model_name is None:
         return [], "SAM model not found. Please download SAM model from extension README."
@@ -569,7 +576,7 @@ class Script(scripts.Script):
                     gr.HTML(value="<p>Left click the image to add one positive point (black dot). Right click the image to add one negative point (red dot). Left click the point to remove it.</p>")
                     sam_input_image = gr.Image(label="Image for Segment Anything", elem_id=f"{tab_prefix}input_image", source="upload", type="pil", image_mode="RGBA")
                     sam_remove_dots = gr.Button(value="Remove all point prompts")
-                    sam_dummy_component = gr.Label(visible=False)
+                    sam_dummy_component = gr.Textbox(visible=False)
                     sam_remove_dots.click(
                         fn=lambda _: None,
                         _js="samRemoveDots",
