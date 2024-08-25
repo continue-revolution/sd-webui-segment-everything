@@ -10,7 +10,7 @@ from collections import OrderedDict
 from scipy.ndimage import binary_dilation
 from modules import scripts, shared, script_callbacks
 from modules.ui import gr_show
-from modules.ui_components import FormRow
+from modules.ui_components import FormRow, ToolButton
 from modules.safe import unsafe_torch_load, load
 from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusionProcessing
 from modules.devices import device, torch_gc, cpu
@@ -47,16 +47,6 @@ txt2img_width: gr.Slider = None
 txt2img_height: gr.Slider = None
 img2img_width: gr.Slider = None
 img2img_height: gr.Slider = None
-
-
-class ToolButton(gr.Button, gr.components.FormComponent):
-    """Small button with single emoji as text, fits inside gradio forms"""
-
-    def __init__(self, **kwargs):
-        super().__init__(variant="tool", **kwargs)
-
-    def get_block_name(self):
-        return "button"
         
 
 def show_masks(image_np, masks: np.ndarray, alpha=0.5):
@@ -566,7 +556,7 @@ class Script(scripts.Script):
                 with gr.Column(scale=10):
                     with gr.Row():
                         sam_model_name = gr.Dropdown(label="SAM Model", choices=sam_model_list, value=sam_model_list[0] if len(sam_model_list) > 0 else None)
-                        sam_refresh_models = ToolButton(value=refresh_symbol)
+                        sam_refresh_models = ToolButton(value=refresh_symbol, variant="tool")
                         sam_refresh_models.click(refresh_sam_models, sam_model_name, sam_model_name)
                 with gr.Column(scale=1):
                     sam_use_cpu = gr.Checkbox(value=False, label="Use CPU for SAM")
