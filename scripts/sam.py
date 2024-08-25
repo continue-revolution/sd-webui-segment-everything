@@ -21,6 +21,18 @@ from scripts.dino import dino_model_list, dino_predict_internal, show_boxes, cle
 from scripts.auto import clear_sem_sam_cache, register_auto_sam, semantic_segmentation, sem_sam_garbage_collect, image_layer_internal, categorical_mask_image
 from scripts.process_params import SAMProcessUnit, max_cn_num
 
+import importlib.metadata
+
+def get_gradio_version():
+    try:
+        version = importlib.metadata.version("gradio")
+        return version
+    except importlib.metadata.PackageNotFoundError:
+        return None
+
+# Example usage
+gradio_version = get_gradio_version()
+
 
 refresh_symbol = '\U0001f504'       # 🔄
 sam_model_cache = OrderedDict()
